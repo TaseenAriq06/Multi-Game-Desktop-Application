@@ -1,25 +1,31 @@
-import random
-import tkinter as tk
-import nltk
-from nltk.corpus import words
+# hangman.py
 # This project uses NLTK. Before running, install NLTK and download the words corpus:
 # pip install nltk
 # python -m nltk.downloader words
 
+import random
+import tkinter as tk
+import nltk
+from nltk.corpus import words
+
+# Make a word list of valid words (4-9 letters, alphabetic only)
 word_list = [w.lower() for w in words.words() if w.isalpha() and 4 <= len(w) <= 9]
 
 def hangman():
+    # Initialize game variables
     word = random.choice(word_list)
-    guessed_letters = set() # hashset
+    guessed_letters = set() # letters guessed so far
     lives = 10
     display_word = ["_" for _ in word]
 
+    # Function to update labels in GUI
     def update_display(message="", color="black"):
         word_label.config(text=" ".join(display_word))
         lives_label.config(text=f"Lives: " + "❌" * lives)
         guessed_label.config(text="Guessed: " + ", ".join(sorted(guessed_letters)))
         message_label.config(text=message, fg=color)
-
+    
+    # Function to restart game
     def restart():
             nonlocal word, display_word, guessed_letters, lives
             word = random.choice(word_list)
@@ -29,17 +35,20 @@ def hangman():
             guess_button.config(state="normal")
             update_display("Game Restarted!")
             return
-
+    
+    # Function to handle a guess
     def guess_letter():
         nonlocal lives
 
         guess = entry.get().lower()
         entry.delete(0, tk.END)
         
+        # Check for valid input
         if not guess.isalpha():
             update_display("Letters only.")
             return
         
+        # Full word guess
         if len(guess) == len(word):
             if guess == word:
                 for i in range(len(word)):
@@ -49,6 +58,8 @@ def hangman():
             else:
                 lives -= 1
                 update_display("Wrong full word guess!")
+
+        # Single letter guess
         elif len(guess) == 1:
             if guess in guessed_letters:
                 update_display("Already guessed.")
@@ -65,7 +76,8 @@ def hangman():
         else:
             update_display("Guess 1 letter or the full word ONLY")
             return
-
+        
+        # Check win/lose conditions
         if "_" not in display_word:
             update_display(f"You won! Word was: {word}")
             guess_button.config(state="disabled")
@@ -74,6 +86,7 @@ def hangman():
             update_display(f"You lost! Word was: {word}")
             guess_button.config(state="disabled")
 
+    # Setup GUI
     root = tk.Tk()
     root.title("Hangman")
     root.geometry("400x300")
